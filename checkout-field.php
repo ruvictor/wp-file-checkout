@@ -4,7 +4,7 @@
  * Description: This plugin will add a Custom WooCommerce File Type Field on the Checkout Page
  * Plugin URI: https://vicodemedia.com
  * Author: Victor Rusu
- * Version: 1
+ * Version: 1.1
 **/
 
 //* Don't access this file directly
