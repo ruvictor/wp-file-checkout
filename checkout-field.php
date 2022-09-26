@@ -19,7 +19,8 @@ function vicode_setup_field() {
 } 
 add_action( 'init', 'vicode_setup_field' );
  
- 
+// small changes
+
 /**
  * Activate the plugin.
  */
