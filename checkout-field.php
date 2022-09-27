@@ -62,11 +62,39 @@ function vicode_file_upload(){
 	$upload_dir = wp_upload_dir();
 
 	if ( isset( $_FILES[ 'vicode_file' ] ) ) {
-		$path = $upload_dir[ 'path' ] . '/' . basename( $_FILES[ 'vicode_file' ][ 'name' ] );
+		// $path = $upload_dir[ 'path' ] . '/' . basename( $_FILES[ 'vicode_file' ][ 'name' ] );
 
-		if( move_uploaded_file( $_FILES[ 'vicode_file' ][ 'tmp_name' ], $path ) ) {
-			echo $upload_dir[ 'url' ] . '/' . basename( $_FILES[ 'vicode_file' ][ 'name' ] );
+		$file_name = $_FILES['vicode_file']['name'];
+		$file_temp = $_FILES['vicode_file']['tmp_name'];
+
+		$upload_dir = wp_upload_dir();
+		$image_data = file_get_contents( $file_temp );
+		$filename = basename( $file_name );
+		$filetype = wp_check_filetype($file_name);
+		$filename = time().'.'.$filetype['ext'];
+
+		if ( wp_mkdir_p( $upload_dir['path'] ) ) {
+		  $file = $upload_dir['path'] . '/' . $filename;
 		}
+		else {
+		  $file = $upload_dir['basedir'] . '/' . $filename;
+		}
+
+		file_put_contents( $file, $image_data );
+		$wp_filetype = wp_check_filetype( $filename, null );
+		$attachment = array(
+		  'post_mime_type' => $wp_filetype['type'],
+		  'post_title' => sanitize_file_name( $filename ),
+		  'post_content' => '',
+		  'post_status' => 'inherit'
+		);
+
+		$attach_id = wp_insert_attachment( $attachment, $file );
+		require_once( ABSPATH . 'wp-admin/includes/image.php' );
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+
+		echo $attach_id;
 	}
 	die;
 }
@@ -78,7 +106,7 @@ function vicode_file_upload(){
 add_action( 'woocommerce_checkout_update_order_meta', 'vicode_save_what_we_added' );
 
 function vicode_save_what_we_added( $order_id ){
-	if( ! empty( $_POST[ 'vicode_file_field' ] ) ) {
+	if( ! empty(intval($_POST[ 'vicode_file_field' ]))) {
 		update_post_meta( $order_id, 'vicode_file_field', sanitize_text_field( $_POST[ 'vicode_file_field' ] ) );
 	}
 }
@@ -89,10 +117,8 @@ function vicode_save_what_we_added( $order_id ){
 add_action( 'woocommerce_admin_order_data_after_order_details', 'vicode_order_meta_general' );
 
 function vicode_order_meta_general( $order ){
-
 	$file = get_post_meta( $order->get_id(), 'vicode_file_field', true );
 	if( $file ) {
-		echo '<img src="' . esc_url( $file ) . '" style="width:100%;margin:20px 0 0;" />';
+		echo '<p class="form-field form-field-wide wc-customer-user">' . wp_get_attachment_image( $file, 'medium' ) . '</p>';
 	}
-
 }
