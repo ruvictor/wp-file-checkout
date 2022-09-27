@@ -31,10 +31,21 @@ function vicode_file_upload_field() {
 		<div class="form-row form-row-wide">
 			<input type="file" id="vicode_file" name="vicode_file" />
 			<input type="hidden" name="vicode_file_field" />
-			<label for="vicode_file" class="vicode_class"><a>Select a cool image</a></label>
+			<label for="vicode_file" class="vicode_class"><a>Select an image</a></label>
 			<div id="vicode_filelist"></div>
 		</div>
 	<?php
+}
+
+/**
+ * Validation
+**/
+add_action('woocommerce_checkout_process', 'customised_checkout_field_process');
+
+function customised_checkout_field_process(){
+    // Show an error message if the field is not set.
+    if (!$_POST['vicode_file_field']) 
+        wc_add_notice(__('<strong>Billing Image</strong> is a required field.') , 'error');
 }
 
 
