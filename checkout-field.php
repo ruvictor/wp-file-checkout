@@ -41,7 +41,9 @@ function vicode_file_upload_field() {
 /**
  * Processing data on the server side
 **/
+// Fires authenticated Ajax actions for logged-in users
 add_action( 'wp_ajax_vicodeupload', 'vicode_file_upload' );
+// Fires non-authenticated Ajax actions for logged-out users
 add_action( 'wp_ajax_nopriv_vicodeupload', 'vicode_file_upload' );
 
 function vicode_file_upload(){
@@ -56,4 +58,30 @@ function vicode_file_upload(){
 		}
 	}
 	die;
+}
+
+
+/**
+ * Insert the File URL in Order Meta
+**/
+add_action( 'woocommerce_checkout_update_order_meta', 'vicode_save_what_we_added' );
+
+function vicode_save_what_we_added( $order_id ){
+	if( ! empty( $_POST[ 'vicode_file_field' ] ) ) {
+		update_post_meta( $order_id, 'vicode_file_field', sanitize_text_field( $_POST[ 'vicode_file_field' ] ) );
+	}
+}
+
+/**
+ * display the image on edit order dashboard
+**/
+add_action( 'woocommerce_admin_order_data_after_order_details', 'vicode_order_meta_general' );
+
+function vicode_order_meta_general( $order ){
+
+	$file = get_post_meta( $order->get_id(), 'vicode_file_field', true );
+	if( $file ) {
+		echo '<img src="' . esc_url( $file ) . '" style="width:100%;margin:20px 0 0;" />';
+	}
+
 }
